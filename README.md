@@ -16,7 +16,7 @@ Then a simple `\repnote{labelname}` would replicate the footnote mark.
 `\repnote` does not have any optional arguments.
 
 It is possible to define a static footnote vis `\DeclareRepeatedFootnote`,
-i.e. `\DeclareRepeatedFootnote}[format]{macroname}{footnotetext}{labelname}`.
+i.e. `\DeclareRepeatedFootnote[format]{macroname}{footnotetext}{labelname}`.
 
 Yet there aren't any known incompatibilities with other packages or loading order concerns.
 `repnote` relies only the `kvoptions` package,
