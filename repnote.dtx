@@ -1,0 +1,277 @@
+% \iffalse meta-comment
+%
+% Copyright (C) 2015 by Ruben Giannotti 
+% <ruben dot giannotti at gmx dot net>
+% -------------------------------------------------------
+% 
+% This work may be distributed and/or modified under the
+% conditions of the LaTeX Project Public License, either
+% version 1.3c of this license or (at your option) any
+% later version. The latest version of this license is in
+%   http://www.latex-project.org/lppl.txt
+% and version 1.3 or later is part of all distributions
+% of LaTeX version 2005/12/01 or later.
+%
+% This work has the LPPL maintenance status `maintained'.
+% 
+% The Current Maintainer of this work is Ruben Giannotti.
+%
+% This work consists of the files
+%   repnote.dtx 
+%   repnote.ins
+% and the derived file repnote.sty.
+%
+% \fi
+%
+% \iffalse
+%<*driver>
+\ProvidesFile{repnote.dtx}
+%</driver>
+%<package>\NeedsTeXFormat{LaTeX2e}[2008/04/05]
+%<package>\ProvidesPackage{repnote}
+%<*package>
+    [2016/03/01 v0.1 Repeat footnotes (RG)]
+%</package>
+%
+%<*driver>
+\documentclass{ltxdoc}
+\usepackage{csquotes}
+\usepackage{parskip}
+\setlength\parindent{0pt}
+\newcommand*\cls{\textit}
+\newcommand*\pkg{\textsf}
+\newcommand*\url{\texttt}
+\newcommand*\email{\texttt}
+\newcommand*\optn{\textbf}
+\renewcommand*\arg[1]{\##1}
+\newcommand*\placeholder[1]{\(\langle\mathit{#1}\rangle\)}
+\EnableCrossrefs
+\CodelineIndex
+\RecordChanges
+\begin{document}
+  \DocInput{repnote.dtx}
+\end{document}
+%</driver>
+% \fi
+%
+% \CheckSum{112}
+%
+% \CharacterTable
+%  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
+%   Lower-case    \a\b\c\d\e\f\g\h\i\j\k\l\m\n\o\p\q\r\s\t\u\v\w\x\y\z
+%   Digits        \0\1\2\3\4\5\6\7\8\9
+%   Exclamation   \!     Double quote  \"     Hash (number) \#
+%   Dollar        \$     Percent       \%     Ampersand     \&
+%   Acute accent  \'     Left paren    \(     Right paren   \)
+%   Asterisk      \*     Plus          \+     Comma         \,
+%   Minus         \-     Point         \.     Solidus       \/
+%   Colon         \:     Semicolon     \;     Less than     \<
+%   Equals        \=     Greater than  \>     Question mark \?
+%   Commercial at \@     Left bracket  \[     Backslash     \\
+%   Right bracket \]     Circumflex    \^     Underscore    \_
+%   Grave accent  \`     Left brace    \{     Vertical bar  \|
+%   Right brace   \}     Tilde         \~}
+%
+%
+% \changes{v0.1}{2016/03/01}{Initial test version}
+%
+% \GetFileInfo{repnote.dtx}
+%
+% \DoNotIndex{\newcommand,\newenvironment,\!,\@empty,\@gobble,\@gobbletwo}
+% \DoNotIndex{\@ifpackageloaded,\@ifpackagewith,\@ifundefined,\@namedef}
+% \DoNotIndex{\@nil,\@onlypreamble,\@tempa,\@tempb,\@tempswafalse,\def}
+% \DoNotIndex{\@tempswatrue,\^,\-,\active,\begingroup,\catcode,\@car,\@cdr}
+% \DoNotIndex{\edef,\else,\endgroup,\endinput,\expandafter,\fi,\if}
+% \DoNotIndex{\if@tempswa,\ifcase,\ifnum,\ifx,\lccode,\let,\lowercase}
+% \DoNotIndex{\MessageBreak,\next,\number,\numexpr,\or,\PackageError}
+% \DoNotIndex{\PackageWarning,\PackageWarningNoLine,\strip@prefix,\@@end}
+% \DoNotIndex{\relax,\space,\string,\DeclareOption,\ProcessOptions}
+% \DoNotIndex{\meaning,\ifdefined,\csname,\chardef,\endcsname,\protect}
+% \DoNotIndex{\input,\RequirePackage,\global,\ifcsname,\makeatother}
+% \DoNotIndex{\@makeother,\the,\toks@}
+%
+% \title{The \pkg{repnote} package\thanks{This document
+%   corresponds to \pkg{repnote}~\fileversion, dated \filedate.}}
+% \author{Ruben Giannotti\thanks{\email{ruben dot giannotti at gmx dot net}}}
+%
+% \maketitle
+%
+% This package is meant to make indipendant the well known feature of
+% pointing several footnotes to the same anchor
+% present in the \cls{scrartcl} and \cls{memoir} classes
+% while adding more flexibility and funtionality than the present packages
+% that tackle this task: \pkg{footmisc} and \pkg{fixfoot}.
+%
+% The first major change is a patch of the \cs{footnote} macro
+% that can be used as usual furthermore, so the solution is completely backward compatible.
+% \cs{footnote} now is just called with an optional third argument
+% in which the user declares a unique labelname to which he points with the
+% core macro \cs{repnote}, i.e. \cs{footnote}\oarg{number}\marg{text}\oarg{labelname}.
+%
+% Then a simple \cs{repnote}\marg{labelname} would replicate the footnote mark.
+% \cs{repnote} does not have any optional arguments.
+%
+% It is possible to define a static footnote vis \cs{DeclareRepeatedFootnote},
+% i.e. \cs{DeclareRepeatedFootnote}\oarg{format}\marg{macroname}\marg{footnotetext}\marg{labelname}.
+%
+% Yet there aren't any known incompatibilities with other packages or loading order concerns.
+% \pkg{repnote} relies only the \pkg{kvoptions} package,
+% which presumably is present in every \TeX\ distribution.
+%
+% The package is invoked as usual employing the \cs{usepackage} command:
+%
+% \begin{flushleft}
+% \cs{usepackage}\oarg{options}\{repnote\}
+% \end{flushleft}
+%
+% The only option available is \optn{reprint} and its values are boolean.
+% There are also the synonyms \optn{reprint} for \mbox{\enquote{reprint=true}}
+% and \optn{noreprint} for \mbox{\enquote{reprint=false}}.
+% This option specifies if the anchor footnote should be reprinted
+% while entering a new page.
+%
+% \StopEventually{}
+%
+% \section*{Implementation}
+%
+% After the usual presentation, we define a breakout point by
+% checking that the typesetting engine is sufficiently recent
+% to include the $\varepsilon$-\TeX{} extensions.
+%    \begin{macrocode}
+\@ifundefined{eTeXversion}
+  {\PackageError{repnote}{LaTeX engine too old, aborting}
+  {Please upgrade your TeX system}\@@end}{}
+%    \end{macrocode}
+% The required package gets loaded.
+%    \begin{macrocode}
+\RequirePackage{kvoptions}
+%    \end{macrocode}
+% Then we set up the option handler and declare and process the options.
+%    \begin{macrocode}
+\SetupKeyvalOptions{
+  family=RNT,
+  prefix=@rnt@
+}
+\DeclareBoolOption[true]{reprint}
+\DeclareComplementaryOption{noreprint}{reprint}
+\ProcessKeyvalOptions*
+\AtEndOfPackage{%
+  \if@rnt@reprint\else\def\repnote{\rnt@repeat}\fi
+}
+%    \end{macrocode}
+%
+% \DescribeMacro{\footnote}
+% The package starts by patching the \cs{footnote} macro.
+% Following code sets up the slightly modified input parsing:
+%    \begin{macrocode}
+\let\rnt@ltx@footnote\footnote
+\def\footnote{%
+  \@ifnextchar[
+    {\rnt@footnote@}
+    {\rnt@footnote@[]}
+}
+\def\rnt@footnote@[#1]#2{%
+  \@ifnextchar[
+    {\rnt@footnote@@[#1]{#2}}
+    {\rnt@footnote@@[#1]{#2}[]}
+}
+%    \end{macrocode}
+% \DescribeMacro{\rnt@footnote@@}
+% The actual patch begins here in the second auxiliary macro.
+% It consists in first saving the footnote body into a uniquely named macro
+% as \arg{3} is a uniquely chosen labelname and
+% setting up a counter that holds the page number of the given footnote
+% which will be used for later comparisons.
+%    \begin{macrocode}
+\def\rnt@footnote@@[#1]#2[#3]{%
+  \expandafter\xdef\csname rnt@#3@fnbody\endcsname{#2}%
+  \if\relax\detokenize{#3}\relax\else
+    \newcounter{rnt@footlink@#3}\setcounter{rnt@footlink@#3}{\thepage}\fi
+%    \end{macrocode}
+% Then the actual footnote is set via the stored version \cs{rnt@ltx@footnote}
+% including a \cs{label} set in the inner of the footnote
+% employing the auxiliary macro \cs{rnt@footlabel} (see below).
+% In parallel to the last part the footnote counter is stored.
+%    \begin{macrocode}
+  \if\relax\detokenize{#1}\relax
+    \rnt@ltx@footnote{\rnt@footlabel{#3}#2}%
+    \expandafter\xdef\csname rnt@#3@thefn\endcsname{\thefootnote}%
+  \else
+    \expandafter\xdef\csname rnt@#3@thefn\endcsname{#1}%
+    \rnt@ltx@footnote[#1]{\rnt@footlabel{#3}#2}%
+  \fi
+}
+%    \end{macrocode}
+% \DescribeMacro{\rnt@footlabel}
+% This auxiliary macro just sets \cs{label} for internal use --
+% namely for the repetition of a footnote mark.
+%    \begin{macrocode}
+\def\rnt@footlabel#1{%
+  \if\relax\detokenize{#1}\relax\else\label{rnt-#1}\fi
+}
+%    \end{macrocode}
+% Preparation is not done yet. Next there will be two macros
+% to deal with the two different tasks in the repitition process.
+% (The macro names are quite self-explanatory.)
+%
+% \DescribeMacro{\rnt@reprint}
+% As alredy stated the name says it all. \cs{rnt@reprint} will replicate
+% an existing footnote labeled with \arg{1}, resp. internally \enquote{rnt-\#1}
+% Only note that it is essential to force expansion inside the arguments of \cs{footnote}.
+%    \begin{macrocode}
+\def\rnt@reprint#1{%
+  \begingroup\edef\x{\endgroup%
+    \noexpand\footnote
+      [\csname rnt@#1@thefn\endcsname]
+      {\csname rnt@#1@fnbody\endcsname}}\x
+}
+%    \end{macrocode}
+% \DescribeMacro{\rnt@repeat}
+% The repetition of a labeled footnote (without reprinting it) is done via \cs{@footnotemark}
+% after redefining the mark to the reference to the footnote in question.
+%    \begin{macrocode}
+\def\rnt@repeat#1{%
+  \protected@xdef\@thefnmark{\ref{rnt-#1}}\@footnotemark
+}
+%    \end{macrocode}
+% Setting up an auxiliary counter:
+%    \begin{macrocode}
+\newcounter{rnt@tmpcnt}
+%    \end{macrocode}
+% \DescribeMacro{\repnote}
+% Now, the core macro \cs{repnote} is just an assembly of the prepared parts.
+% It will use \cs{rnt@repeat} or \cs{rnt@reprint} depending on whether
+% \cs{repnote} is called on a page that alredy has the reference printed or not.
+% To assure that this actually can be done pagewise the comparison anchor
+% is refreshed on every \cs{rnt@reprint}.
+%    \begin{macrocode}
+\def\repnote#1{%
+  \setcounter{rnt@tmpcnt}{\thepage}%
+  \ifnum\value{rnt@tmpcnt}=\value{rnt@footlink@#1}%
+    \rnt@repeat{#1}%
+  \else
+    \rnt@reprint{#1}%
+    \setcounter{rnt@footlink@#1}{\thepage}%
+  \fi
+}
+%    \end{macrocode}
+% Lastly, the package provides a user interface macro
+% that is simply a wrapper for the above designed mechanism.
+% Note that the first use of the derived macro will call \cs{footnote}
+% while every subsequent use will call \cs{repnote} --
+% which is accomplished by redefining the derived macro in its own definition.
+% The grouping in the first layer of the definition is done
+% to keep the potential changes in \arg{1} local to the \cs{footnote} call.
+%    \begin{macrocode}
+\newcommand\DeclareRepeatedFootnote[4][]{%
+  \def#2{%
+    \begingroup#1\footnote{#4}[#3]\endgroup
+    \def#2{%
+      \repnote{#3}
+    }
+  }
+}
+%    \end{macrocode}
+%
+%\Finale
+\endinput
