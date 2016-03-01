@@ -1,0 +1,2 @@
+# repnote
+Repeat footnotes
