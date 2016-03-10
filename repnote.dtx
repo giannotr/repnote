@@ -30,7 +30,7 @@
 %<package>\NeedsTeXFormat{LaTeX2e}[2008/04/05]
 %<package>\ProvidesPackage{repnote}
 %<*package>
-    [2016/03/01 v0.1 Repeat footnotes (RG)]
+    [2016/03/10 v0.2 Repeat footnotes (RG)]
 %</package>
 %
 %<*driver>
@@ -54,7 +54,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{112}
+% \CheckSum{123}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -74,6 +74,7 @@
 %
 %
 % \changes{v0.1}{2016/03/01}{Initial test version}
+% \changes{v0.2}{2016/03/10}{Added support for symbolic footnote marks}
 %
 % \GetFileInfo{repnote.dtx}
 %
@@ -106,13 +107,14 @@
 % that can be used as usual furthermore, so the solution is completely backward compatible.
 % \cs{footnote} now is just called with an optional third argument
 % in which the user declares a unique labelname to which he points with the
-% core macro \cs{repnote}, i.e. \cs{footnote}\oarg{number}\marg{text}\oarg{labelname}.
+% core macro \cs{repnote}, i.e. \cs{footnote}\oarg{mark}\marg{text}\oarg{labelname}.
+% \placeholder{mark} can now be a number or a symbol!
 %
 % Then a simple \cs{repnote}\marg{labelname} would replicate the footnote mark.
 % \cs{repnote} does not have any optional arguments.
 %
 % It is possible to define a static footnote vis \cs{DeclareRepeatedFootnote},
-% i.e. \cs{DeclareRepeatedFootnote}\oarg{format}\marg{macroname}\marg{footnotetext}\marg{labelname}.
+% i.e. \cs{DeclareRepeatedFootnote}\oarg{mark}\marg{macroname}\marg{footnotetext}\marg{labelname}.
 %
 % Yet there aren't any known incompatibilities with other packages or loading order concerns.
 % \pkg{repnote} relies only the \pkg{kvoptions} package,
@@ -130,7 +132,10 @@
 % This option specifies if the anchor footnote should be reprinted
 % while entering a new page.
 %
-% \StopEventually{}
+%\StopEventually{^^A
+%  \PrintChanges
+%  \PrintIndex
+%}
 %
 % \section*{Implementation}
 %
@@ -160,7 +165,7 @@
 }
 %    \end{macrocode}
 %
-% \DescribeMacro{\footnote}
+% \begin{macro}{\footnote}
 % The package starts by patching the \cs{footnote} macro.
 % Following code sets up the slightly modified input parsing:
 %    \begin{macrocode}
@@ -176,7 +181,7 @@
     {\rnt@footnote@@[#1]{#2}[]}
 }
 %    \end{macrocode}
-% \DescribeMacro{\rnt@footnote@@}
+% \begin{macro}{\rnt@footnote@@}
 % The actual patch begins here in the second auxiliary macro.
 % It consists in first saving the footnote body into a uniquely named macro
 % as \arg{3} is a uniquely chosen labelname and
@@ -191,18 +196,38 @@
 % Then the actual footnote is set via the stored version \cs{rnt@ltx@footnote}
 % including a \cs{label} set in the inner of the footnote
 % employing the auxiliary macro \cs{rnt@footlabel} (see below).
-% In parallel to the last part the footnote counter is stored.
+% \changes{v0.2}{2016/03/10}{Canceled out the poor mans referencing via storing \cs{thefootnote}}
 %    \begin{macrocode}
   \if\relax\detokenize{#1}\relax
     \rnt@ltx@footnote{\rnt@footlabel{#3}#2}%
-    \expandafter\xdef\csname rnt@#3@thefn\endcsname{\thefootnote}%
   \else
-    \expandafter\xdef\csname rnt@#3@thefn\endcsname{#1}%
-    \rnt@ltx@footnote[#1]{\rnt@footlabel{#3}#2}%
+    \afterassignment\rnt@footnote@@@\count@=0#1\hfuzz#1\hfuzz{#2}{#3}%
   \fi
 }
 %    \end{macrocode}
-% \DescribeMacro{\rnt@footlabel}
+% \begin{macro}{\rnt@footnote@@@}
+% \changes{v0.2}{2016/03/10}{Added another auxiliary macro to the chain}
+% If \arg{1} was not empty additionally it will be checked if it was a number or not.
+% The crucial part is done by setting or not setting \cs{count@} to \enquote{0\arg{1}}
+% in the above definition. (Obviously \arg{1} won't be eaten up by the assignment
+% if it wasn't a number! -- hence remaining a non-empty arg for the below comparison.) 
+%    \begin{macrocode}
+\def\rnt@footnote@@@#1\hfuzz#2\hfuzz#3#4{%
+  \if\relax\detokenize{#1}\relax
+    \rnt@ltx@footnote[#2]{\rnt@footlabel{#4}#3}%
+  \else
+    \begingroup
+      \def\thefootnote{#2}%
+      \rnt@ltx@footnote{\rnt@footlabel{#4}#3}%
+    \endgroup
+    \addtocounter{footnote}{-1}%
+  \fi
+}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\rnt@footlabel}
 % This auxiliary macro just sets \cs{label} for internal use --
 % namely for the repetition of a footnote mark.
 %    \begin{macrocode}
@@ -210,35 +235,44 @@
   \if\relax\detokenize{#1}\relax\else\label{rnt-#1}\fi
 }
 %    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
 % Preparation is not done yet. Next there will be two macros
 % to deal with the two different tasks in the repitition process.
 % (The macro names are quite self-explanatory.)
 %
-% \DescribeMacro{\rnt@reprint}
+% \begin{macro}{\rnt@reprint}
+% \changes{v0.2}{2016/03/10}{Used the proper referencing mechanism}
 % As alredy stated the name says it all. \cs{rnt@reprint} will replicate
 % an existing footnote labeled with \arg{1}, resp. internally \enquote{rnt-\#1}
-% Only note that it is essential to force expansion inside the arguments of \cs{footnote}.
+% Only note that it is essential to force expansion inside the argument of \cs{footnote}.
 %    \begin{macrocode}
 \def\rnt@reprint#1{%
   \begingroup\edef\x{\endgroup%
     \noexpand\footnote
-      [\csname rnt@#1@thefn\endcsname]
+      [\noexpand\ref{rnt-#1}]
       {\csname rnt@#1@fnbody\endcsname}}\x
 }
 %    \end{macrocode}
-% \DescribeMacro{\rnt@repeat}
+% \end{macro}
+%
+% \begin{macro}{\rnt@repeat}
 % The repetition of a labeled footnote (without reprinting it) is done via \cs{@footnotemark}
 % after redefining the mark to the reference to the footnote in question.
 %    \begin{macrocode}
 \def\rnt@repeat#1{%
-  \protected@xdef\@thefnmark{\ref{rnt-#1}}\@footnotemark
+  \protected@xdef\@thefnmark{\ref{rnt-#1}}\@footnotemark%
 }
 %    \end{macrocode}
+% \end{macro}
+%
 % Setting up an auxiliary counter:
 %    \begin{macrocode}
 \newcounter{rnt@tmpcnt}
 %    \end{macrocode}
-% \DescribeMacro{\repnote}
+%
+% \begin{macro}{\repnote}
 % Now, the core macro \cs{repnote} is just an assembly of the prepared parts.
 % It will use \cs{rnt@repeat} or \cs{rnt@reprint} depending on whether
 % \cs{repnote} is called on a page that alredy has the reference printed or not.
@@ -255,23 +289,28 @@
   \fi
 }
 %    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\DeclareRepeatedFootnote}
+% \changes{v0.2}{2016/03/10}{Adjusted to the new ability of \cs{footnote}
+% beeing able to handle symblic footnote marks}
 % Lastly, the package provides a user interface macro
 % that is simply a wrapper for the above designed mechanism.
 % Note that the first use of the derived macro will call \cs{footnote}
 % while every subsequent use will call \cs{repnote} --
 % which is accomplished by redefining the derived macro in its own definition.
-% The grouping in the first layer of the definition is done
-% to keep the potential changes in \arg{1} local to the \cs{footnote} call.
 %    \begin{macrocode}
 \newcommand\DeclareRepeatedFootnote[4][]{%
-  \def#2{%
-    \begingroup#1\footnote{#4}[#3]\endgroup
-    \def#2{%
-      \repnote{#3}
+  \gdef#2{%
+    \footnote[#1]{#4}[#3]%
+    \gdef#2{%
+      \repnote{#3}%
     }
   }
 }
 %    \end{macrocode}
+% \end{macro}
 %
-%\Finale
+% \clearpage
+% \Finale
 \endinput
